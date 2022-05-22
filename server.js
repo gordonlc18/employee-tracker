@@ -17,6 +17,7 @@ const figlet = require('figlet');
       }
     
       console.log('Connected to the MySQL server.');
+      console.table(chalk.yellow("\n WELCOME TO EMPLOYEE TRACKER \n"));
 
       console.table(
         chalk.yellow.bold(
@@ -33,7 +34,7 @@ const figlet = require('figlet');
         )
       );
 
-      //   Main Function
+// Main Function
  eTracker();
 });
 
@@ -59,15 +60,15 @@ const eTracker = () => {
     })
     .then((answer) => {
         switch (answer.action) {
-            case 'View a Department':
+            case 'View All Departments':
                 viewDepartments();
                 break;
   
-            case 'View Employees':
+            case 'View All Employees':
                 viewEmployees();
                 break;
   
-                case 'View a Role':
+                case 'View All Roles':
                     viewRoles();
                     break;
 
@@ -109,3 +110,40 @@ const eTracker = () => {
         }
     });
   };
+// Show all departments 
+const viewDepartments = () => {
+    console.log('Showing all departments...\n');
+    const query = "SELECT * FROM department";
+    connection.query(query, (error, res) => {
+        if (error) throw error;
+		console.table(' Current Departments:', res);
+        eTracker();
+    });
+};
+
+// Show all employees 
+const viewEmployees = () => {
+    console.log('Showing all employees...\n');
+    const query = "SELECT * FROM employee";
+    connection.query(query, (error, res) => {
+        if (error) throw error;
+		console.table(' Current Employees:', res);
+        eTracker();
+    });
+};
+
+// Show all roles 
+const viewRoles = () => {
+    console.log('Showing all roles...\n');
+    const query = "SELECT * FROM role";
+    connection.query(query, (error, res) => {
+        if (error) throw error;
+		console.table(' Current Roles:', res);
+        eTracker();
+    });
+};
+
+function exit() {
+    console.log('Goodbye!');
+      connection.end();
+  }
