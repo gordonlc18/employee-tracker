@@ -1,8 +1,5 @@
 // Dependencies
-// const express = require('express');
 const connection = require('./db/connection');
-// const mysql = require('mysql2');
-// require('dotenv').config();
 const inquirer = require('inquirer');
 const cTable = require('console.table');
 const chalk = require('chalk');    // https://bobbyhadz.com/blog/javascript-chalk-error-err-require-esm-of-es-module
@@ -53,8 +50,9 @@ const eTracker = () => {
             'Add an Employee',
             'Add a Role',
             'Delete an Employee',
-            'Delete a Department',
             'Delete a Role',
+            'Delete a Department',
+            
             "Exit",
         ],
     })
@@ -110,6 +108,7 @@ const eTracker = () => {
         }
     });
   };
+
 // Show all departments 
 const viewDepartments = () => {
     console.log('Showing all departments...\n');
@@ -143,7 +142,99 @@ const viewRoles = () => {
     });
 };
 
+// Add a department 
+const addDepartment = () => {
+    const query = "SELECT * FROM department";
+  connection.query(query, (err, results) => {
+    if (err) throw err;
+
+    console.log(chalk.blue("List of current departments"));
+
+    console.table(results);
+    inquirer.prompt([
+      {
+        name: 'addDept',
+        type: 'input', 
+        message: "What department would you like to add?",
+        validate: newDept => {
+          if (newDept) {
+              return true;
+          } else {
+              console.log('Please enter a department');
+              return false;
+          }
+        }
+      }
+    ])
+      .then(answer => {
+        const sql = `INSERT INTO department (name)
+                    VALUES (?)`;
+        connection.query(sql, answer.addDept, (err, result) => {
+          if (err) throw err;
+          console.log('Added ' + answer.addDept + " to departments!"); 
+          eTracker();
+           
+      });
+    });
+  })
+};
+
+// Add an employee
+
+
+// Add new role
+const addRole = () => {
+    const addRoleQuery = "SELECT * FROM role";
+  connection.query(addRoleQuery, (err, results) => {
+    if (err) throw err;
+
+    console.log(chalk.blue("List of current roles"));
+    console.table(results[0]);
+
+  
+      inquirer
+        .prompt([
+          {
+            name: "newTitle",
+            type: "input",
+            message: "What is the new title?",
+          },
+          {
+            name: "newSalary",
+            type: "input",
+            message: "What is the salary amount for the new title:",
+          },
+          {
+            name: "deptID",
+        type: "input",
+        message: "What is the department ID number?",
+      },
+    ])
+    .then((answer) => {
+      connection.query( "INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)",
+        [answer.newTitle, answer.newSalary, answer.deptID],
+        function (err, res) {
+          if (err) throw err;
+          console.log(answer.newTitle + " has been added to roles!");
+
+          eTracker();
+        }
+      );
+    });
+})
+};
+
+// Delete an employee
+
+
+ // Delete a role
+
+
+ // Delete a department
+
+
 function exit() {
-    console.log('Goodbye!');
+    // console.log('Goodbye!');
       connection.end();
   }
+
