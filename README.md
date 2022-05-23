@@ -57,7 +57,7 @@ This application requires `Node.js`, `Inquirer`, `console.table` and `mysql2`. T
 
 <!-- # Walkthrough -->
 
-<!-- Walkthrough video can be found via [YouTube](https://youtu.be/lRZn0WGreTA). -->
+Walkthrough video can be found via [YouTube](https://youtu.be/oXdR0dTc__o).
 
 <!-- # Screenshot -->
 
