@@ -90,12 +90,12 @@ const eTracker = () => {
                     deleteEmployee();
                     break;
   
-            case 'Delete a Department':
-               deleteDepartment();
-                break;
-  
                 case 'Delete a Role':
                 deleteRole();
+                break;
+
+                case 'Delete a Department':
+               deleteDepartment();
                 break;
   
             case 'Exit':
@@ -105,9 +105,9 @@ const eTracker = () => {
             default:
                 console.log(`Invalid action: ${answer.action}`);
                 break;
-        }
-    });
-  };
+            }
+        });
+     };
 
 // Show all departments 
 const viewDepartments = () => {
@@ -180,8 +180,44 @@ const addDepartment = () => {
 };
 
 // Add an employee
+const addEmployee = () => {
+        inquirer.prompt([
+                {
+                    name: 'first_name',
+                    type: 'input',
+                    message: "What is the employee's first name?",
+                },
+                {
+                    name: 'last_name',
+                    type: 'input',
+                    message: "What is the employee's last name?",
+                },
+                {
+                    name: 'role_id',
+                    type: 'input', 
+                    message: 'What is the role ID of your employee?',
+                },
+                {
+                    name: 'manager_id',
+                    type: 'input',
+                    message: "What is the manager's id?",
+                },
+            ])
+            .then((answer) => {
+                connection.query(
+                  "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)",
+                  [answer.first_name, answer.last_name, answer.role_id, answer.manager_id],
+                  function (err, res) {
+                      if (err) throw err;
+                     console.table(chalk.yellow (' Employee '+ answer.first_name +' has been added.'));
+                    //   console.log("Employee has been added.");
 
-
+                eTracker();
+              } 
+             );
+            });
+         };
+            
 // Add new role
 const addRole = () => {
     const addRoleQuery = "SELECT * FROM role";
@@ -190,19 +226,18 @@ const addRole = () => {
 
     console.log(chalk.blue("List of current roles"));
     console.table(results[0]);
-
   
       inquirer
         .prompt([
           {
-            name: "newTitle",
+            name: "newRole",
             type: "input",
-            message: "What is the new title?",
+            message: "What is the new role?",
           },
           {
             name: "newSalary",
             type: "input",
-            message: "What is the salary amount for the new title:",
+            message: "What is the salary amount for the new role:",
           },
           {
             name: "deptID",
@@ -210,12 +245,13 @@ const addRole = () => {
         message: "What is the department ID number?",
       },
     ])
+
     .then((answer) => {
       connection.query( "INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)",
-        [answer.newTitle, answer.newSalary, answer.deptID],
+        [answer.newRole, answer.newSalary, answer.deptID],
         function (err, res) {
           if (err) throw err;
-          console.log(answer.newTitle + " has been added to roles!");
+          console.log(chalk.yellow(answer.newRole + " has been added to role!"));
 
           eTracker();
         }
@@ -225,16 +261,91 @@ const addRole = () => {
 };
 
 // Delete an employee
+const deleteEmployee = () => {
+    connection.query('SELECT * FROM employee', (err, results) => {
+      if (err) throw err;
+  
+      console.table(results);
+  
+      inquirer
+        .prompt([
+          {
+            name: "removeID",
+            type: "input",
+            message: "Enter the Employee ID to be removed:",
+          },
+        ])
+        .then((answer) => {
+          connection.query(`DELETE FROM employee WHERE ?`, {
+            id: answer.removeID,
+          });
+          console.log(chalk.yellow("Employee id " + answer.removeID + " has been removed."));
 
+          eTracker();
+        })
+    })
+  };
 
  // Delete a role
+ const deleteRole = () => {
+    connection.query('SELECT role.id AS role_id, role.title, role.salary, department.name FROM role RIGHT JOIN department on department.id = department_id', (err, results) => {
+        if (err) throw err;
+        inquirer
+            .prompt([
+                {
+                    name: 'choice',
+                    type: 'rawlist',
+                    choices() {
+                      return results.map(({ title, name }) => `${title}, ${name} department`);
+                    },
+                    message: 'Please select a role to remove.',
+                  },
+            ])
+            .then((answer) => {
+                    connection.query('DELETE FROM role WHERE ?',
+                    {
+                        title: answer.choice.split(",")[0]
+                    },
+                    (err, res) => {
+                        if (err) throw err;
+                        console.log(chalk.yellow(`\nYou have removed ${answer.choice} from the company database.`));
 
-
+                       eTracker();
+                    })
+                })
+             })
+           }
+  
  // Delete a department
+const deleteDepartment = () => {
+  const query = "SELECT * FROM department";
+  connection.query(query, (err, results) => {
+    if (err) throw err;
+    inquirer
+      .prompt([
+        {
+          name: "dept",
+          type: "list",
+          // make a new array and loop through, return each item ie.(department)
+          choices: function () {
+            let choiceArr = results.map((choice) => choice.name);
+            return choiceArr;
+          },
+          // pick the array item to be deleted
+          message: "Which department will be deleted?",
+        },
+      ])
+      .then((answer) => {
+        connection.query(`DELETE FROM department WHERE ?`, {
+          name: answer.department,
+        });
+        eTracker();
+      });
+  });
+};
 
-
-function exit() {
-    // console.log('Goodbye!');
+        function exit() {
+       console.log('Goodbye!');
       connection.end();
   }
 
